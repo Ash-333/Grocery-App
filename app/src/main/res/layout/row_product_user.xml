@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:cardElevation="4dp"
+    app:contentPadding="8dp"
+    android:layout_marginTop="2dp"
+    android:layout_margin="6dp"
+    app:cardCornerRadius="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/cart_item"
+            android:layout_centerVertical="true"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"
+            android:layout_marginTop="8dp"
+            android:id="@+id/productImg"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/productImg"
+            android:layout_centerVertical="true"
+            android:orientation="vertical">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/discountNoteTv"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/shape_rec04"
+                android:layout_alignParentEnd="true"
+                android:padding="5dp"
+                tools:text="10% off"
+                android:textColor="#198c19"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/titleTv"
+                android:padding="5dp"
+                tools:text="name"
+                style="@style/TextAppearance.AppCompat.Title"
+                android:textColor="@color/button_color"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/descriptionTv"
+                android:layout_below="@id/titleTv"
+                android:maxLines="2"
+                android:padding="5dp"
+                tools:text="Quantity"
+                android:textColor="@color/black"/>
+         <!--   <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/addToCartTv"
+                android:layout_marginTop="4dp"
+                android:layout_below="@id/descriptionTv"
+                android:padding="5dp"
+                android:drawableStart="@drawable/ic_cart_purple"
+                android:drawableTint="@color/button_color"
+                android:text="@string/add_to_cart"
+                android:textColor="@color/black"/>
+                -->
+
+            <RelativeLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/descriptionTv"
+                android:layout_marginEnd="8dp"
+                android:layout_alignParentEnd="true">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/discountedPriceTv"
+                    android:padding="5dp"
+                    tools:text="Rs 500" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/originalPriceTv"
+                    android:layout_toEndOf="@id/discountedPriceTv"
+                    android:padding="5dp"
+                    tools:text="Rs 550" />
+            </RelativeLayout>
+        </RelativeLayout>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_next"
+            android:layout_centerVertical="true"
+            android:id="@+id/nextImg"
+            android:layout_marginEnd="8dp"
+            android:scaleType="fitCenter"
+            android:adjustViewBounds="true"/>
+    </RelativeLayout>
+</com.google.android.material.card.MaterialCardView>

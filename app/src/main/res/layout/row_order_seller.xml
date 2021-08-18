@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_margin="4dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="8dp"
+    app:contentPadding="8dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Order 12929393"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/black"
+            android:textStyle="bold"
+            android:id="@+id/orderId"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="12/20/2021"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/black"
+            android:layout_alignParentEnd="true"
+            android:id="@+id/orderDate"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Akamat62@gmail.com"
+            android:layout_marginBottom="4dp"
+            android:layout_below="@id/orderId"
+            android:id="@+id/email"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Total Amount: Rs 3000"
+            android:layout_below="@id/email"
+            android:id="@+id/totalAmt"/>
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_next"
+            android:id="@+id/nextBtn"
+            android:layout_marginBottom="4dp"
+            android:layout_centerHorizontal="true"
+            android:layout_below="@id/orderDate"
+            android:layout_alignParentEnd="true"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="In progress"
+            android:layout_below="@id/nextBtn"
+            android:layout_toStartOf="@id/nextBtn"
+            android:id="@+id/orderStatus"/>
+    </RelativeLayout>
+
+</com.google.android.material.card.MaterialCardView>
