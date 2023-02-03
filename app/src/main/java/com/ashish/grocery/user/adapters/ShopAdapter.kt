@@ -9,10 +9,10 @@ import android.widget.ImageView
 import android.widget.RatingBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import coil.load
 import com.ashish.grocery.R
 import com.ashish.grocery.user.ShopDetailActivity
 import com.ashish.grocery.user.models.ShopModel
-import com.bumptech.glide.Glide
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -36,7 +36,9 @@ class ShopAdapter(val context: Context, var shops: ArrayList<ShopModel>) :
         val uid = shopNo.uid
         loadReview(holder, shopNo)
         try {
-            Glide.with(context).load(shopNo.profileImage).timeout(6000).into(holder.shopImg)
+            holder.shopImg.load(shopNo.profileImage) {
+                placeholder(R.drawable.ic_cart_white)
+            }
         } catch (e: Exception) {
             holder.shopImg.setImageResource(R.drawable.ic_shop)
         }
@@ -85,7 +87,6 @@ class ShopAdapter(val context: Context, var shops: ArrayList<ShopModel>) :
         var phone: TextView = view.findViewById(R.id.phone)
         var ratingBar: RatingBar = view.findViewById(R.id.ratingBar)
         var close: TextView = view.findViewById(R.id.closed)
-        var nextBtn: ImageView = view.findViewById(R.id.next)
         var onlineStatus: ImageView = view.findViewById(R.id.onlineStatus)
 
     }

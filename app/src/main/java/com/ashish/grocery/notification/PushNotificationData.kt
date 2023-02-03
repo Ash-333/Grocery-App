@@ -1,6 +1,6 @@
 package com.ashish.grocery.notification
 
-data class PushNotification(
+data class PushNotificationData(
     val data:NotificationData,
-    val to:String
+    val to:String?=""
 )

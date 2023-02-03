@@ -11,11 +11,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
 import android.text.Editable
+import android.text.TextUtils
 import android.util.Log
 import android.widget.*
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import coil.load
 import com.ashish.grocery.R
 import com.ashish.grocery.ui.LoginActivity
 import com.google.android.gms.tasks.Continuation
@@ -23,9 +25,11 @@ import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
-import com.squareup.picasso.Picasso
+
+
 import java.util.*
 
 class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
@@ -46,6 +50,7 @@ class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
     private lateinit var progressDialog: ProgressDialog
     private lateinit var locationManager: LocationManager
     private var imageUri: Uri? = null
+    private lateinit var token:String
     private val storage by lazy{
         FirebaseStorage.getInstance()
     }
@@ -97,6 +102,14 @@ class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
             //update user data
             inputData()
         }
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (task.result != null && !TextUtils.isEmpty(task.result)) {
+                        token= task.result!!
+                    }
+                }
+            }
     }
     private lateinit var fullName:String
     private lateinit var phoneNumber:String
@@ -126,6 +139,7 @@ class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
         if(imageUri==null){
             //saving data without img
             val hashMap = HashMap<String, String>()
+            hashMap["messageToken"]=""+token
             hashMap["name"] = ""+fullName
             hashMap["shopName"] = ""+shopName
             hashMap["phone"] = ""+phoneNumber
@@ -175,6 +189,7 @@ class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
                 Log.i("URL","DownloadUrl $downloadUrl")
 
                 val hashMap = HashMap<String, String>()
+                hashMap["messageToken"]=""+token
                 hashMap["name"] = ""+fullName
                 hashMap["shopName"] = ""+shopName
                 hashMap["phone"] = ""+phoneNumber
@@ -246,7 +261,9 @@ class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
 
                     switch.isChecked = shopOpen == "true"
                     try {
-                        Picasso.get().load(profileImage).placeholder(R.drawable.ic_person_gray).into(profileImg)
+                        profileImg.load(profileImage) {
+                            placeholder(R.drawable.ic_person_gray)
+                        }
                     }catch (e:Exception){
                         profileImg.setImageResource(R.drawable.ic_person_gray)
                     }
@@ -279,7 +296,7 @@ class EditProfileSellerActivity : AppCompatActivity(), LocationListener {
         val addresses: List<Address>
         val geocoder = Geocoder(this, Locale.getDefault())
         try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            addresses = geocoder.getFromLocation(latitude, longitude, 1) as List<Address>
             val address: String = addresses[0].getAddressLine(0)
             val city: String = addresses[0].locality
             val state: String = addresses[0].adminArea

@@ -22,7 +22,6 @@ import com.ashish.grocery.ui.SettingsActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.*
-import com.squareup.picasso.Picasso
 
 class MainSellerActivity : AppCompatActivity() {
     private lateinit var nameTv: TextView
@@ -204,8 +203,9 @@ class MainSellerActivity : AppCompatActivity() {
                     }
 
                     try {
-                        Picasso.get().load(img).placeholder(R.drawable.ic_person_gray)
-                            .into(profileImg)
+                        profileImg.load(img) {
+                            placeholder(R.drawable.ic_person_gray)
+                        }
                     } catch (e: Exception) {
                         profileImg.setImageResource(R.drawable.ic_person_gray)
                     }

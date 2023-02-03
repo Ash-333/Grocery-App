@@ -3,7 +3,6 @@ package com.ashish.grocery
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
-import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -21,7 +20,6 @@ import com.ashish.grocery.user.OrdersActivity
 import com.ashish.grocery.user.adapters.CategoryAdapter
 import com.ashish.grocery.user.adapters.PopularItemAdapter
 import com.ashish.grocery.user.adapters.UserProductAdapter
-import com.ashish.grocery.user.cart.Carts
 import com.ashish.grocery.user.models.CategoryModel
 import com.ashish.grocery.user.models.PopularItemModel
 import com.google.firebase.auth.FirebaseAuth
@@ -90,9 +88,6 @@ class MainShopActivity : AppCompatActivity() {
             }
             true
         }
-
-
-
 
         binding.navView.itemIconTintList = null
         binding.menu.setOnClickListener {

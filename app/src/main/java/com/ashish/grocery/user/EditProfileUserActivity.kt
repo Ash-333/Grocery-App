@@ -262,14 +262,14 @@ class EditProfileUserActivity : AppCompatActivity(), LocationListener{
     }
 
     private fun findAddress() {
-        val addresses: List<Address>
+        val addresses: List<Address?>
         val geocoder = Geocoder(this, Locale.getDefault())
         try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1)
-            val address: String = addresses[0].getAddressLine(0)
-            val city: String = addresses[0].locality
-            val state: String = addresses[0].adminArea
-            val country: String = addresses[0].countryName
+            addresses = geocoder.getFromLocation(latitude, longitude, 1) as List<Address?>
+            val address: String = addresses[0]!!.getAddressLine(0)
+            val city: String = addresses[0]!!.locality
+            val state: String = addresses[0]!!.adminArea
+            val country: String = addresses[0]!!.countryName
 
             countryEt.setText(country)
             cityEt.setText(city)

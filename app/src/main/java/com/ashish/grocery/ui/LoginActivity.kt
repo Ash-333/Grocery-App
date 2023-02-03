@@ -2,14 +2,13 @@ package com.ashish.grocery.ui
 
 import android.app.ProgressDialog
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.ashish.grocery.R
 import com.ashish.grocery.seller.MainSellerActivity
 import com.ashish.grocery.user.MainUserActivity
@@ -54,10 +53,10 @@ class LoginActivity : AppCompatActivity() {
     private fun loginUser() {
         email = emailEt.text.toString()
         password = passwordEt.text.toString()
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Invalid Email pattern", Toast.LENGTH_SHORT).show()
-            return
-        }
+//        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+//            Toast.makeText(this, "Invalid Email pattern", Toast.LENGTH_SHORT).show()
+//            return
+//        }
         if (TextUtils.isEmpty(password)) {
             Toast.makeText(this, "Enter password..", Toast.LENGTH_SHORT).show()
             return
@@ -111,6 +110,7 @@ class LoginActivity : AppCompatActivity() {
                 }
 
                 override fun onCancelled(error: DatabaseError) {
+
                     errorMessageTv.text = error.message
                 }
             })
@@ -122,6 +122,6 @@ class LoginActivity : AppCompatActivity() {
         forgotTV = findViewById(R.id.forgotTv)
         noAccount = findViewById(R.id.registerTv)
         loginBtn = findViewById(R.id.loginBtn)
-        //errorMessageTv = findViewById(R.id.errorMessage)
+        errorMessageTv = findViewById(R.id.errorMessage)
     }
 }

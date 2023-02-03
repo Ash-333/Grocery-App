@@ -16,14 +16,18 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.ashish.grocery.MainShopActivity
 import com.ashish.grocery.R
 import com.ashish.grocery.seller.MainSellerActivity
 import com.ashish.grocery.seller.RegisterSellerActivity
 import com.google.android.gms.tasks.Continuation
+import com.google.android.gms.tasks.OnCompleteListener
 import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.iid.internal.FirebaseInstanceIdInternal
+import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.UploadTask
 import java.util.*
@@ -46,6 +50,7 @@ class RegisterUserActivity : AppCompatActivity(), LocationListener {
     private lateinit var locationManager: LocationManager
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var progressDialog: ProgressDialog
+    private lateinit var token:String
     private val storage by lazy{
         FirebaseStorage.getInstance()
     }
@@ -80,6 +85,15 @@ class RegisterUserActivity : AppCompatActivity(), LocationListener {
         progressDialog.setTitle("Please wait...")
         progressDialog.setCancelable(false)
         locationPermission = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION)
+
+        FirebaseMessaging.getInstance().token
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    if (task.result != null && !TextUtils.isEmpty(task.result)) {
+                        token= task.result!!
+                    }
+                }
+            }
 
         backBtn.setOnClickListener {
             onBackPressed()
@@ -182,6 +196,7 @@ class RegisterUserActivity : AppCompatActivity(), LocationListener {
         if (imageUri == null) {
             //saving data without img
             val hashMap = HashMap<String, String>()
+            hashMap["messageToken"]=""+token
             hashMap["uid"] = "" + firebaseAuth.uid
             hashMap["email"] = "" + email
             hashMap["password"] = ""+password
@@ -237,6 +252,7 @@ class RegisterUserActivity : AppCompatActivity(), LocationListener {
                 Log.i("URL","DownloadUrl $downloadUrl")
 
                 val hashMap = HashMap<String, String>()
+                hashMap["messageToken"]=""+token
                 hashMap["uid"] = ""+firebaseAuth.uid
                 hashMap["email"] = ""+email
                 hashMap["password"] = ""+password
@@ -259,11 +275,11 @@ class RegisterUserActivity : AppCompatActivity(), LocationListener {
                 dbRef.child(firebaseAuth.uid!!).setValue(hashMap)
                     .addOnSuccessListener {
                         progressDialog.dismiss()
-                        startActivity(Intent(this, MainSellerActivity::class.java))
+                        startActivity(Intent(this, MainShopActivity::class.java))
                         finish()
                     }.addOnFailureListener {
                         progressDialog.dismiss()
-                        startActivity(Intent(this, MainSellerActivity::class.java))
+                        startActivity(Intent(this, MainShopActivity::class.java))
                         finish()
                     }
             }
@@ -292,14 +308,14 @@ class RegisterUserActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun findAddress() {
-        val addresses: List<Address>
+        val addresses: List<Address?>
         val geocoder = Geocoder(this, Locale.getDefault())
         try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1)
-            val address: String = addresses[0].getAddressLine(0)
-            val city: String = addresses[0].locality
-            val state: String = addresses[0].adminArea
-            val country: String = addresses[0].countryName
+            addresses = geocoder.getFromLocation(latitude, longitude, 1) as List<Address?>
+            val address: String = addresses[0]!!.getAddressLine(0)
+            val city: String? = addresses[0]?.locality
+            val state: String? = addresses[0]?.adminArea
+            val country: String? = addresses[0]?.countryName
 
             countryEt.setText(country)
             cityEt.setText(city)

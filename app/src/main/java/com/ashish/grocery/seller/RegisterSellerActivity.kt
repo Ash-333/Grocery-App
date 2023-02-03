@@ -306,7 +306,7 @@ class RegisterSellerActivity : AppCompatActivity(), LocationListener {
         val addresses: List<Address>
         val geocoder = Geocoder(this, Locale.getDefault())
         try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1)
+            addresses = geocoder.getFromLocation(latitude, longitude, 1) as List<Address>
             val address: String = addresses[0].getAddressLine(0)
             val city: String = addresses[0].locality
             val state: String = addresses[0].adminArea

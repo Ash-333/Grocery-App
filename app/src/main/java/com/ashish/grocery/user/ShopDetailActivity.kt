@@ -17,9 +17,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
 import coil.load
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
 import com.ashish.grocery.R
 import com.ashish.grocery.seller.adpaters.ProductAdapter
 import com.ashish.grocery.seller.models.ProductsModel
@@ -28,7 +25,6 @@ import com.ashish.grocery.user.adapters.UserProductAdapter
 import com.ashish.grocery.user.models.CartItemModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import org.json.JSONObject
 import p32929.androideasysql_library.Column
 import p32929.androideasysql_library.EasyDB
 
@@ -73,7 +69,6 @@ class ShopDetailActivity : AppCompatActivity() {
     private var adapter: ProductAdapter? = null
     private var productAdapter: UserProductAdapter? = null
     private var listData: ArrayList<ProductsModel> = ArrayList()
-    val FCM_KEY="AAAAEP5drBM:APA91bE9bAVoPXhzPiVvOGnLXfP2q5cp0toEhf6_xrDxUdYnQfDEcLCnrQXmjTfFtZp48evEttEILsESCdxsteZfOp3TvoQfvHchnqxY14I7ubMwJMP1oXGxOT9-TpWX44N75E4z0eB8"
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_shop_detail)
@@ -294,7 +289,6 @@ class ShopDetailActivity : AppCompatActivity() {
                 ref.child(timeStamp).child("Items").child(pId).setValue(hashMap)
                 progressDialog.dismiss()
                 Toast.makeText(this, "Order Placed Successfully", Toast.LENGTH_SHORT).show()
-                prepareNotificationMessage(timeStamp)
 
             }
 
@@ -397,54 +391,6 @@ class ShopDetailActivity : AppCompatActivity() {
             override fun onCancelled(error: DatabaseError) {
             }
         })
-    }
-
-    private fun prepareNotificationMessage(orderId: String) {
-        val NOTIFICATION_TOPIC = "/topics/$FCM_KEY"
-        val NOTIFICATION_TITLE = "New order$orderId"
-        val NOTIFICATI0N_MESSAGE = "Congratulations...! You have  new order"
-        val NOTIFICATIN_TYPE = "New order"
-
-        val notificationJo = JSONObject()
-        val notificationBodyJo = JSONObject()
-        try {
-            notificationBodyJo.put("notificationType", NOTIFICATIN_TYPE)
-            notificationBodyJo.put("buyerUid", firebaseAuth.uid)
-            notificationBodyJo.put("sellerUid", shopUid)
-            notificationBodyJo.put("notificationTitle", NOTIFICATION_TITLE)
-            notificationBodyJo.put("notificationMessage", NOTIFICATI0N_MESSAGE)
-            notificationJo.put("to", NOTIFICATION_TOPIC)
-            notificationJo.put("data", notificationBodyJo)
-        } catch (e: Exception) {
-            Toast.makeText(this, e.message.toString(), Toast.LENGTH_SHORT).show()
-        }
-        sendNotification(notificationJo, orderId)
-    }
-    private fun sendNotification(notificationJo: JSONObject, orderId: String) {
-        // url to post our data
-        val url = "https://fcm.googleapis.com/fcm/send"
-
-        val jsonObject = object : JsonObjectRequest(url,
-            notificationJo,
-            Response.Listener { _ ->
-                val intent = Intent(this, OrderDetailUserActivity::class.java)
-                intent.putExtra("orderId", orderId)
-                intent.putExtra("orderTo", shopUid)
-                startActivity(intent)
-            }, Response.ErrorListener { _ -> // method to handle errors.
-                val intent = Intent(this, OrderDetailUserActivity::class.java)
-                intent.putExtra("orderId", orderId)
-                intent.putExtra("orderTo", shopUid)
-                startActivity(intent)
-            }) {
-            override fun getHeaders(): Map<String, String> {
-                val header: MutableMap<String, String> = HashMap()
-                header["Content-Type"] = "application-json"
-                header["Authorization"] = "key$FCM_KEY"
-                return header
-            }
-        }
-        Volley.newRequestQueue(this).add(jsonObject)
     }
 
     fun filter(text: String) {

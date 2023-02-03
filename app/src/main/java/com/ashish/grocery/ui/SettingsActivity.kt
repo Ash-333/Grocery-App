@@ -10,12 +10,12 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import com.ashish.grocery.Constants
+import com.ashish.grocery.Constants.Companion.FCM_TOPIC
 import com.ashish.grocery.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.messaging.FirebaseMessaging
 
 
-const val FCM_KEY="AAAAEP5drBM:APA91bE9bAVoPXhzPiVvOGnLXfP2q5cp0toEhf6_xrDxUdYnQfDEcLCnrQXmjTfFtZp48evEttEILsESCdxsteZfOp3TvoQfvHchnqxY14I7ubMwJMP1oXGxOT9-TpWX44N75E4z0eB8"
 //const val FCM_TOPIC="PUSH_NOTIFICATION"
 class SettingsActivity : AppCompatActivity() {
     private lateinit var backBtn:ImageButton
@@ -27,7 +27,6 @@ class SettingsActivity : AppCompatActivity() {
     private var isChecked:Boolean=false
     private val enabledMessage:String="Notification are enabled"
     private val disabledMessage:String="Notification are disabled"
-    val constant= Constants()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -56,7 +55,7 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
     private fun subscribeToTopic(){
-        FirebaseMessaging.getInstance().subscribeToTopic(constant.FCM_TOPIC)
+        FirebaseMessaging.getInstance().subscribeToTopic(FCM_TOPIC)
             .addOnSuccessListener {
                 spEditor=sp.edit()
                 spEditor.putBoolean("FCM_ENABLED",true)
@@ -68,7 +67,7 @@ class SettingsActivity : AppCompatActivity() {
             }
     }
     private fun unSubscribeToTopic(){
-        FirebaseMessaging.getInstance().unsubscribeFromTopic(constant.FCM_TOPIC)
+        FirebaseMessaging.getInstance().unsubscribeFromTopic(FCM_TOPIC)
             .addOnSuccessListener {
                 spEditor=sp.edit()
                 spEditor.putBoolean("FCM_ENABLED",false)

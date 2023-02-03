@@ -12,6 +12,7 @@ class ShopModel() {
     var online: String= ""
     var profileImage: String = ""
     var shopOpen: String= ""
+    var messageToken: String= ""
 
     constructor(uid:String,email:String,name:String,shopName: String,phone: String,deliveryFees: String,
                 longitude: String,latitude: String,online: String,profileImage: String,shopOpen: String) : this() {

@@ -11,12 +11,10 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.RecyclerView
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import com.ashish.grocery.Constants
-import com.ashish.grocery.Constants.Companion.SERVER_KEY
 import com.ashish.grocery.R
+import com.ashish.grocery.notification.NotificationData
+import com.ashish.grocery.notification.PushNotificationData
+import com.ashish.grocery.notification.api.ApiUtilities
 import com.ashish.grocery.user.adapters.OrderItemAdapter
 import com.ashish.grocery.user.models.OrderItemModel
 import com.google.firebase.auth.FirebaseAuth
@@ -24,7 +22,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Response
 import java.util.*
 
 class OrderDetailSellerActivity : AppCompatActivity() {
@@ -48,6 +47,7 @@ class OrderDetailSellerActivity : AppCompatActivity() {
     private var orderItem: ArrayList<OrderItemModel> = ArrayList()
     private var orderItemAdapter: OrderItemAdapter? = null
     private lateinit var firebaseAuth: FirebaseAuth
+    private lateinit var messageToken: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_order_detail_seller)
@@ -88,10 +88,24 @@ class OrderDetailSellerActivity : AppCompatActivity() {
         ref.child(firebaseAuth.uid!!).child("Orders").child(orderId).updateChildren(hashMap as Map<String, Any>)
             .addOnSuccessListener {
                 Toast.makeText(this,message, Toast.LENGTH_SHORT).show()
-                prepareNotificationMessage(orderId,message)
+                val pushNotificationData=PushNotificationData(NotificationData("Your order status Changed",message),messageToken)
+                ApiUtilities.getInstance().sendNotification(pushNotificationData).enqueue(object :retrofit2.Callback<PushNotificationData>{
+                    override fun onResponse(
+                        call: Call<PushNotificationData>,
+                        response: Response<PushNotificationData>
+                    ) {
+                        Toast.makeText(this@OrderDetailSellerActivity,response.toString(),Toast.LENGTH_SHORT).show()
+                    }
+
+                    override fun onFailure(call: Call<PushNotificationData>, t: Throwable) {
+                        Toast.makeText(this@OrderDetailSellerActivity,"Something went wrong",Toast.LENGTH_SHORT).show()
+                    }
+
+                })
             }.addOnFailureListener {
                 Toast.makeText(this,it.message.toString(), Toast.LENGTH_SHORT).show()
             }
+
     }
 
     private fun loadOrderedItems() {
@@ -121,7 +135,7 @@ class OrderDetailSellerActivity : AppCompatActivity() {
         ref.child(firebaseAuth.uid!!).child("Orders").child(orderId).addValueEventListener(object:ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 val orderStatus=""+snapshot.child("orderStatus").value
-                val orderBy=""+snapshot.child("orderBy").value
+                ""+snapshot.child("orderBy").value
                 val date=""+snapshot.child("orderTime").value
                 val orderCost=""+snapshot.child("orderCost").value
                 val orderId=""+snapshot.child("orderId").value
@@ -157,11 +171,11 @@ class OrderDetailSellerActivity : AppCompatActivity() {
     private fun findAddress(latitude: String, longitude: String) {
         val lat = latitude.toDouble()
         val lon = longitude.toDouble()
-        val addresses: List<Address>
+        val addresses: List<Address?>
         val geocoder = Geocoder(this, Locale.getDefault())
         try {
-            addresses = geocoder.getFromLocation(lat, lon, 1)
-            val address = addresses[0].getAddressLine(0)
+            addresses = geocoder.getFromLocation(lat, lon, 1) as List<Address?>
+            val address = addresses[0]?.getAddressLine(0)
             deliveryAddressTv.text = address
         } catch (e: Exception) {
             deliveryAddressTv.text = e.toString()
@@ -201,6 +215,7 @@ class OrderDetailSellerActivity : AppCompatActivity() {
                 destinationLongitude=""+snapshot.child("longitude").value
                 val email=""+snapshot.child("name").value
                 val phone=""+snapshot.child("phone").value
+                messageToken = "" + snapshot.child("messageToken").value
                 emailTv.text=email
                 phoneTv.text=phone
             }
@@ -210,47 +225,8 @@ class OrderDetailSellerActivity : AppCompatActivity() {
         })
     }
 
-    private fun prepareNotificationMessage(orderId: String,message:String) {
-        val NOTIFICATION_TOPIC = "/topics/" + Constants().FCM_KEY
-        val NOTIFICATION_TITLE = "Your order$orderId"
-        val NOTIFICATI0N_MESSAGE = ""+message
-        val NOTIFICATIN_TYPE = "OrderStatusChanged"
 
-        val notificationJo = JSONObject()
-        val notificationBodyJo = JSONObject()
-        try {
-            notificationBodyJo.put("notificationType", NOTIFICATIN_TYPE)
-            notificationBodyJo.put("buyerUid", orderBy)
-            notificationBodyJo.put("sellerUid", firebaseAuth.uid)
-            notificationBodyJo.put("notificationTitle", NOTIFICATION_TITLE)
-            notificationBodyJo.put("notificationMessage", NOTIFICATI0N_MESSAGE)
-            notificationJo.put("to", NOTIFICATION_TOPIC)
-            notificationJo.put("data", notificationBodyJo)
-        } catch (e: Exception) {
-            Toast.makeText(this, e.message.toString(), Toast.LENGTH_SHORT).show()
-        }
-        sendNotification(notificationJo)
-    }
-    private fun sendNotification(notificationJo: JSONObject) {
-        // url to post our data
-        val url = "https://fcm.googleapis.com/fcm/send"
 
-        val jsonObject = object : JsonObjectRequest(url,
-            notificationJo,
-            Response.Listener { response ->
-
-            }, Response.ErrorListener { error -> // method to handle errors.
-
-            }) {
-            override fun getHeaders(): Map<String, String> {
-                val header: MutableMap<String, String> = HashMap()
-                header["Content-Type"] = "application-json"
-                header["Authorization"] = "key$SERVER_KEY"
-                return header
-            }
-        }
-        Volley.newRequestQueue(this).add(jsonObject)
-    }
 
     private fun init() {
         backBtn = findViewById(R.id.backBtn)

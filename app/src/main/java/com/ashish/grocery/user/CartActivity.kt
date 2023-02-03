@@ -6,21 +6,17 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.Toast.*
+import android.widget.Toast.LENGTH_SHORT
+import android.widget.Toast.makeText
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
-import com.android.volley.Response
-import com.android.volley.toolbox.JsonObjectRequest
-import com.android.volley.toolbox.Volley
-import com.ashish.grocery.Constants
-import com.ashish.grocery.Constants.Companion.SERVER_KEY
 import com.ashish.grocery.R
 import com.ashish.grocery.databinding.ActivityCartBinding
 import com.ashish.grocery.notification.NotificationData
-import com.ashish.grocery.notification.PushNotification
-import com.ashish.grocery.notification.RetrofitInstance
+import com.ashish.grocery.notification.PushNotificationData
+import com.ashish.grocery.notification.api.ApiUtilities
 import com.ashish.grocery.user.adapters.CartItemAdapter
 import com.ashish.grocery.user.adapters.ICartAdapter
 import com.ashish.grocery.user.cart.cartDb.Cart
@@ -28,21 +24,15 @@ import com.ashish.grocery.user.cart.cartDb.CartDatabase
 import com.ashish.grocery.user.cart.cartDb.CartViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import org.json.JSONObject
+import retrofit2.Call
+import retrofit2.Response
 
-const val TOPIC="topic/PUSH_NOTIFICATION"
 class CartActivity : AppCompatActivity(), ICartAdapter {
-
-    val TAG="MainActivity"
 
     private lateinit var viewModel: CartViewModel
     private lateinit var progressDialog: ProgressDialog
     private lateinit var firebaseAuth: FirebaseAuth
     private lateinit var binding: ActivityCartBinding
-    private var cartItem: ArrayList<Cart> = ArrayList()
     private lateinit var cartItemAdapter: CartItemAdapter
     private var allTotalPrice: Double = 0.0
     private lateinit var shopUid: String
@@ -51,6 +41,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
     private lateinit var myPhone: String
     private lateinit var name: String
     private lateinit var myLong: String
+    private lateinit var messageToken: String
     private var aTotal: Double = 0.0
     private lateinit var list: List<Cart>
     //private var cart: ArrayList<Cart> = ArrayList()
@@ -132,8 +123,24 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
                 hashMap["quantity"] = "" + quantity
 
                 ref.child(timeStamp).child("Items").child(name).setValue(hashMap)
+
                 progressDialog.dismiss()
 
+                val pushNotificationData=
+                    PushNotificationData(NotificationData("You have new order","order by $name"),messageToken)
+                ApiUtilities.getInstance().sendNotification(pushNotificationData).enqueue(object :retrofit2.Callback<PushNotificationData>{
+                    override fun onResponse(
+                        call: Call<PushNotificationData>,
+                        response: Response<PushNotificationData>
+                    ) {
+                        Log.d("Response",response.toString())
+                    }
+
+                    override fun onFailure(call: Call<PushNotificationData>, t: Throwable) {
+                        makeText(this@CartActivity,"Something went wrong",LENGTH_SHORT).show()
+                    }
+
+                })
 
                 makeText(this, "Order Placed Successfully", LENGTH_SHORT).show()
                 deleteAllFromDb()
@@ -229,7 +236,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
             getString(R.string.rs, (allTotalPrice + deliveryFee.toDouble()).toString())
         okBtn.setOnClickListener {
             if (myLat == "" || myLat == "null" || myLong == "" || myLong == "null") {
-                Toast.makeText(
+                makeText(
                     this,
                     "Please enter address in your profile before placing order",
                     LENGTH_SHORT
@@ -237,7 +244,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
                 return@setOnClickListener
             }
             if (myPhone == "" || myPhone == "null") {
-                Toast.makeText(
+                makeText(
                     this,
                     "Please enter phone in your profile before placing order",
                     LENGTH_SHORT
@@ -256,7 +263,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
 //                return@setOnClickListener
 //            }
             if (allTotalPrice < 100) {
-                Toast.makeText(this, "Minimum order should be of Rs 100", LENGTH_SHORT).show()
+                makeText(this, "Minimum order should be of Rs 100", LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             submitOrder()
@@ -278,6 +285,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
                     myPhone = "" + ds.child("phone").value
                     myLat = "" + ds.child("latitude").value
                     myLong = "" + ds.child("longitude").value
+                    messageToken = "" + ds.child("messageToken").value
                 }
             }
 
@@ -303,60 +311,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
         thread.start()
     }
 
-//    fun sendNotification(notification: PushNotification)= CoroutineScope(Dispatchers.IO).launch {
-//        try {
-//            val response=RetrofitInstance.api.pushNotification(notification)
-//            if (response.isSuccessful){
-////                Log.d{TAG,"Response: ${Gson().toJson(response)}"}
-//            }else{
-////                Log.e{TAG, response.errorBody().toString()}
-//            }
-//        }catch (e:Exception){
-////            Log.e{TAG,e.toString()}
-//        }
-//    }
 
-    fun prepareNotification(orderId:String){
-        val NOTIFICATION_TITLE="Congratulation you have new Order!!"
-        val NOTIFICATION_TOPIC=TOPIC
-        val NOTIFICATION_MESSAGE="New order $orderId"
-        val NOTIFICATION_TYPE="New Order"
 
-        var notificationJo= JSONObject()
-        var notificationBodyJo= JSONObject()
 
-        try {
-            //Notification Data
-            notificationBodyJo.put("notificationType",NOTIFICATION_TYPE)
-            notificationBodyJo.put("buyerUid",firebaseAuth.uid)
-            notificationBodyJo.put("sellerUid",shopUid)
-
-            //where to send
-            notificationJo.put("to",NOTIFICATION_TOPIC)
-            notificationJo.put("data",notificationBodyJo)
-        }catch (e:Exception){
-            Toast.makeText(this,e.message.toString(),Toast.LENGTH_SHORT).show()
-        }
-        sendNotification(notificationJo,orderId)
-    }
-
-    private fun sendNotification(notificationJo: JSONObject, orderId: String) {
-        val url = "https://fcm.googleapis.com/fcm/send"
-
-        val jsonObject = object : JsonObjectRequest(url,
-            notificationJo,
-            Response.Listener { response ->
-
-            }, Response.ErrorListener { error -> // method to handle errors.
-
-            }) {
-            override fun getHeaders(): Map<String, String> {
-                val header: MutableMap<String, String> = java.util.HashMap()
-                header["Content-Type"] = "application-json"
-                header["Authorization"] = "key$SERVER_KEY"
-                return header
-            }
-        }
-        Volley.newRequestQueue(this).add(jsonObject)
-    }
 }

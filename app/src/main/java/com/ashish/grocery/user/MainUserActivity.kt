@@ -39,7 +39,6 @@ class MainUserActivity : AppCompatActivity() {
     private lateinit var progressDialog: ProgressDialog
     private lateinit var shopAdapter: ShopAdapter
     private lateinit var orderAdapter: OrderUserAdapter
-    private var listData: ArrayList<ShopModel> = ArrayList()
     private var shopList: ArrayList<ShopModel> = ArrayList()
     private var orderList: ArrayList<OrderUserModel> = ArrayList()
     override fun onCreate(savedInstanceState: Bundle?) {

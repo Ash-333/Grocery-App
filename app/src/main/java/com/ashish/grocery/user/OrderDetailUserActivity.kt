@@ -126,11 +126,12 @@ class OrderDetailUserActivity : AppCompatActivity() {
     private fun findAddress(latitude: String, longitude: String) {
         val lat = latitude.toDouble()
         val lon = longitude.toDouble()
-        val addresses: List<Address>
+        val addresses: List<Address?>
         val geocoder = Geocoder(this, Locale.getDefault())
         try {
-            addresses = geocoder.getFromLocation(lat, lon, 1)
-            val address = addresses[0].getAddressLine(0)
+            addresses =
+                geocoder.getFromLocation(lat, lon, 1) as List<Address?>
+            val address = addresses[0]?.getAddressLine(0)
             deliveryAddressTv.text = address
         } catch (e: Exception) {
             deliveryAddressTv.text = e.toString()
