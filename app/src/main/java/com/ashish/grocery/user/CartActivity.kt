@@ -43,6 +43,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
     private lateinit var myLong: String
     private lateinit var messageToken: String
     private var aTotal: Double = 0.0
+    private lateinit var sellerToken:String
     private lateinit var list: List<Cart>
     //private var cart: ArrayList<Cart> = ArrayList()
 
@@ -56,6 +57,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
         progressDialog.setCancelable(false)
         firebaseAuth = FirebaseAuth.getInstance()
         shopUid = "mRlqasSfeIRBmCCeXYumuGYC9vE2"
+        sellerToken="cFEtCqsJSP2iiJ4IsNS6HU:APA91bGB4KFrMK-B-iPrmd5y9A1w8I_ttNQk7uzbfT9-NzKHRR9XWESzPRHQkP7LO2big7bIuAwt99RlXs4a9glK6bO1c5LSDNZGBK5FPwUsQxrxq_-Vj30lyLjfet4BU-pxz0CzcHwZ"
 
         viewModel = ViewModelProvider(
             this,
@@ -126,26 +128,28 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
 
                 progressDialog.dismiss()
 
-                val pushNotificationData=
-                    PushNotificationData(NotificationData("You have new order","order by $name"),messageToken)
-                ApiUtilities.getInstance().sendNotification(pushNotificationData).enqueue(object :retrofit2.Callback<PushNotificationData>{
-                    override fun onResponse(
-                        call: Call<PushNotificationData>,
-                        response: Response<PushNotificationData>
-                    ) {
-                        Log.d("Response",response.toString())
-                    }
 
-                    override fun onFailure(call: Call<PushNotificationData>, t: Throwable) {
-                        makeText(this@CartActivity,"Something went wrong",LENGTH_SHORT).show()
-                    }
-
-                })
 
                 makeText(this, "Order Placed Successfully", LENGTH_SHORT).show()
                 deleteAllFromDb()
 
             }
+
+            val pushNotificationData=
+                PushNotificationData(NotificationData("You have new order","order by $name"),sellerToken)
+            ApiUtilities.getInstance().sendNotification(pushNotificationData).enqueue(object :retrofit2.Callback<PushNotificationData>{
+                override fun onResponse(
+                    call: Call<PushNotificationData>,
+                    response: Response<PushNotificationData>
+                ) {
+                    Log.d("Response", "$response $shopUid $sellerToken")
+                }
+
+                override fun onFailure(call: Call<PushNotificationData>, t: Throwable) {
+                    makeText(this@CartActivity,"Something went wrong",LENGTH_SHORT).show()
+                }
+
+            })
 
 
         }.addOnFailureListener {
@@ -154,7 +158,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
         }
     }
 
-    fun deleteAllFromDb(){
+    private fun deleteAllFromDb(){
        val thread = Thread {
            CartDatabase.getDatabase(applicationContext).cartDao().delAllItem()
        }
@@ -177,7 +181,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
         })
     }
 
-    fun showCart() {
+    private fun showCart() {
         cartItemAdapter = CartItemAdapter(this, this)
         binding.cartRv.adapter = cartItemAdapter
 
@@ -197,7 +201,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
 
     }
 
-    fun takeOrder() {
+    private fun takeOrder() {
         val cart = ArrayList<Cart>()
         val dialog = Dialog(this)
 //        if (dialog.window!=null){
@@ -208,11 +212,10 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
         val allTotalPriceTv: TextView = dialog.findViewById(R.id.allTotalPriceTv)
         val deliveryFeeAmt: TextView = dialog.findViewById(R.id.deliveryFeeAmt)
         val okBtn: TextView = dialog.findViewById(R.id.OkBtn)
-//        Log.d("Items",cart.size.toString())
+
 
         //viewModel=ViewModelProvider(this,ViewModelProvider.AndroidViewModelFactory.getInstance(application)).get(CartViewModel::class.java)
         viewModel.list.observe(this, Observer { list ->
-            //Log.d("Size", list?.size.toString())
             for (i in list.indices) {
                 val prices = list[i].price
                 Log.d("Price", prices)
@@ -254,7 +257,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
 
             viewModel.list.observe(this, Observer { list ->
                 if (list.isEmpty()) {
-                    Toast.makeText(this, "No item in cart", LENGTH_SHORT).show()
+                    makeText(this, "No item in cart", LENGTH_SHORT).show()
                     return@Observer
                 }
             })
@@ -296,7 +299,7 @@ class CartActivity : AppCompatActivity(), ICartAdapter {
 
     override fun onItemClicked(car: Cart) {
         viewModel.delete(car)
-        Toast.makeText(this, "Item deleted from Cart", Toast.LENGTH_SHORT).show()
+        makeText(this, "Item deleted from Cart", LENGTH_SHORT).show()
     }
 
     fun cart() {
